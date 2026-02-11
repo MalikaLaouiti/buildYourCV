@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV - Laouiti Malika</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .cv-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .name {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .title {
+            font-size: 1.2em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+            font-size: 0.95em;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section {
+            padding: 30px 40px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            font-weight: 600;
+        }
+        
+        .grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+        }
+        
+        .info-group {
+            margin-bottom: 15px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #555;
+        }
+        
+        .skills-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .skill-item {
+            background: #e8f4fc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #2c3e50;
+            border: 1px solid #3498db;
+        }
+        
+        .experience-item, .education-item {
+            margin-bottom: 20px;
+        }
+        
+        .item-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .item-date {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .item-description {
+            color: #555;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .cv-container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <div class="header">
+            <h1 class="name">Malika Laouiti</h1>
+            <div class="title">Développeur Logiciel & Architecte Système</div>
+            <div class="contact-info">
+                <div class="contact-item">📧 laouiti.malika@yahoo.com</div>
+                <div class="contact-item">📱 +216 22  222  222</div>
+                <div class="contact-item">📍 </div>
+                <div class="contact-item">🐱 </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">RÉSUMÉ PROFESSIONNEL</h2>
+            <p>Développeur motivé avec une expertise dans le développement logiciel et l'architecture système. 
+            Passionné par la création de solutions web et logicielles innovantes.</p>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">INFORMATIONS PERSONNELLES</h2>
+            <div class="grid-2col">
+                <div class="info-group">
+                    <div class="info-label">Date de naissance</div>
+                    <div class="info-value">11/06/2003</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Sexe</div>
+                    <div class="info-value">Féminin</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">COMPÉTENCES TECHNIQUES</h2>
+            <div class="grid-2col">
+                <div>
+                    <div class="info-group">
+                        <div class="info-label">Langues parlées</div>
+                        <div class="info-value">Arabe, Français, Anglais, Allemand</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Compétences</div>
+                        <ul class="skills-list">
+            <li class='skill-item'>Web Development</li>
+            <li class='skill-item'>Desktop Application Development</li>
+            <li class='skill-item'>Database Management</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <div class="info-group">
+                        <div class="info-label">Langages de programmation</div>
+                        <ul class="skills-list">
+            <li class='skill-item'>C</li>
+            <li class='skill-item'>Java</li>
+            <li class='skill-item'>SQL</li>
+            <li class='skill-item'>PLSQL</li>
+            <li class='skill-item'>.NET C#</li>
+                        </ul>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Bases de données</div>
+                        <ul class="skills-list">
+            <li class='skill-item'>MySQL</li>
+            <li class='skill-item'>PostgreSQL</li>
+            <li class='skill-item'>MongoDB</li>
+                        </ul>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Outils & Technologies</div>
+                        <ul class="skills-list">
+            <li class='skill-item'>Flex</li>
+            <li class='skill-item'>Bison</li>
+            <li class='skill-item'>Tailwind CSS</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">EXPÉRIENCE PROFESSIONNELLE</h2>
+            <div class='experience-item'>
+                <div class='item-description'>Development of a FullStack Programming Language (Graduation</div>
+            </div>
+            <div class='experience-item'>
+                <div class='item-description'>Project)</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">FORMATION</h2>
+            <div class="education-item">
+                <div class="item-title">Licence en Génie Logiciel</div>
+                <div class="item-date">Juin 2025</div>
+                <div class="item-description">
+                    Institut Supérieur d'Informatique et de Mathématiques de Monastir (ISIMM)
+                </div>
+            </div>
+            <div class="education-item">
+                <div class="item-title">Baccalauréat Technologique</div>
+                <div class="item-date">Juin 2022</div>
+                <div class="item-description">
+                    Lycée Ibn Khaldoun Jemmel - Mention: 15.73/20
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">PROJETS</h2>
+            <div class="experience-item">
+                <div class="item-title">Développement d'un Langage de Programmation FullStack</div>
+                <div class="item-description">
+                    Conception et implémentation complète d'un langage de programmation FullStack pour le web
+                    avec transpiler personnalisé utilisant Flex et Bison.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
