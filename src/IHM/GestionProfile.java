@@ -59,6 +59,7 @@ public class GestionProfile extends JFrame {
         model.addElement("B");
         model.addElement("C");
 
+
         jtp.addTab("T1", new JPanel());
         jtp.addTab("T2", new JPanel());
 
@@ -77,7 +78,7 @@ public class GestionProfile extends JFrame {
                 {
                     if (e.getClickCount()==2) {
                         String ps = jl.getSelectedValue();
-                        FormPanel form = new FormPanel(ps);
+                        FormPanel form = new FormPanel(GestionProfile.this,ps);
                         jtp.addTab(ps, form);
 
                     }
