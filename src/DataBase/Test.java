@@ -1,48 +1,30 @@
 package DataBase;
 
+import java.awt.*;
 import java.sql.*;
 
 public class Test {
     public static void main(String[] args) {
         System.out.println("Star..");
-        //Chargement Driver
-        try {
-            Class.forName(DataBaseConfig.NOM_DRIVER);
-            System.out.println("Driver ok");
-        } catch (ClassNotFoundException e) {
-           System.out.println("erreur driver"+e.getMessage());
-        }
-
-        //connection à la BD
-        Connection con=null;
-        try {
-            con= DriverManager.getConnection(DataBaseConfig.URL_DB,DataBaseConfig.USERNAME,DataBaseConfig.PASSWORD);
-            System.out.println("Connected ...");
-        } catch (SQLException e) {
-            System.out.println("erreur driver"+e.getMessage());
-        }
-
+        Connection con= DataBaseConnection.makeConnection();
         //Execution Requete
-        String requete_insertion="insert into Etudiant values (14043140,'L','Malika',13)";
-        if (con!=null){
-            Statement st= null;
-            try {
-                st = con.createStatement();
-                int a= st.executeUpdate(requete_insertion);
-                if (a>0){
-                    System.out.println("done, inserted");
-                }
-            } catch (SQLException e) {
-                System.out.println("erreur driver"+e.getMessage());
-            }
-        }
+
         String requete_selection="select * from etudiant";
         if (con!=null) {
             try {
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery(requete_selection);
+                ResultSetMetaData rsmd=rs.getMetaData();
+                int nbCol= rsmd.getColumnCount();
+                for (int i=0;i<nbCol;i++){
+                    System.out.print(rsmd.getColumnName(i+1)+"\t\t\t");
+                }
+                System.out.println("\n-------------------------------------------------------------");
                 while(rs.next()){
-                    System.out.println(rs.getInt(1)+rs.getString(2)+rs.getString(3)+rs.getDouble(4));
+                   for (int i=0;i<nbCol;i++){
+                       System.out.print(rs.getObject(i+1)+"\t\t");
+                   }
+                   System.out.println("\n");
                 }
 
             } catch (SQLException e) {
