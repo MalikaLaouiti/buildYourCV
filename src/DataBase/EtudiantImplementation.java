@@ -98,6 +98,28 @@ public class EtudiantImplementation implements EtudinatDAO{
 
     @Override
     public void afficheResultset(ResultSet rs) {
+        if (rs != null) {
+            try {
+                ResultSetMetaData metaData = rs.getMetaData();
+                int columnCount = metaData.getColumnCount();
 
+                for (int i = 1; i <= columnCount; i++) {
+                    System.out.print(metaData.getColumnName(i) + "\t");
+                }
+                System.out.println();
+                System.out.println("----------------------------------------");
+
+                while (rs.next()) {
+                    for (int i = 1; i <= columnCount; i++) {
+                        System.out.print(rs.getString(i) + "\t");
+                    }
+                    System.out.println();
+                }
+            } catch (SQLException e) {
+                System.out.println("Erreur d'affichage du ResultSet: " + e.getMessage());
+            }
+        } else {
+            System.out.println("ResultSet est null");
+        }
     }
 }
