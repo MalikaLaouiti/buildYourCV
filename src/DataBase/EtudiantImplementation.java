@@ -37,11 +37,48 @@ public class EtudiantImplementation implements EtudinatDAO{
 
     @Override
     public int deleteEtudiant(int Cin) {
+        String requete_suppression = "delete from Etudiant where CIN = ?";
+        if (con != null){
+            try {
+                PreparedStatement ps = con.prepareStatement(requete_suppression);
+                ps.setInt(1, Cin);
+
+                int a = ps.executeUpdate();
+                if (a > 0){
+                    System.out.println("Suppression réussie - Étudiant avec CIN " + Cin + " supprimé");
+                    return a;
+                } else {
+                    System.out.println("Aucun étudiant trouvé avec le CIN: " + Cin);
+                }
+            } catch (SQLException e) {
+                System.out.println("Erreur de suppression: " + e.getMessage());
+            }
+        }
         return 0;
     }
 
     @Override
     public int modifEtudiant(int CIN, String nom, String prenom, double moyenne) {
+        String requete_modification = "update Etudiant set nom = ?, prenom = ?, moyenne = ? where CIN = ?";
+        if (con != null){
+            try {
+                PreparedStatement ps = con.prepareStatement(requete_modification);
+                ps.setString(1, nom);
+                ps.setString(2, prenom);
+                ps.setDouble(3, moyenne);
+                ps.setInt(4, CIN);
+
+                int a = ps.executeUpdate();
+                if (a > 0){
+                    System.out.println("Modification réussie - Étudiant avec CIN " + CIN + " mis à jour");
+                    return a;
+                } else {
+                    System.out.println("Aucun étudiant trouvé avec le CIN: " + CIN);
+                }
+            } catch (SQLException e) {
+                System.out.println("Erreur de modification: " + e.getMessage());
+            }
+        }
         return 0;
     }
 
