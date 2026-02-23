@@ -9,6 +9,12 @@ public class Profil {
     private String anneeEtude; // Ex: "1ère année", "4ème année"
     private int anneeAcademique; // Ex: 2024
 
+    public Profil(String nom, String prenom, String pseudo) {
+        this.nom = nom;
+        this.prenom = prenom;
+        this.pseudo = pseudo;
+    }
+
     public Profil(String nom, String prenom, String pseudo, String langues,
                          String cycle, String anneeEtude, int anneeAcademique) {
         this.nom = nom;

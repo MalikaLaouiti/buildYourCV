@@ -16,12 +16,11 @@ public class FormPanel extends JPanel {
     JButton btnSave, btnClose, btnAddLangue;
     String[] cycles = {"1er Cycle", "2ème Cycle", "3ème Cycle"};
     String pseudo;
+    Profil p;
 
-    // Panel pour les langues
     JPanel languesPanel;
     ArrayList<LangueRow> langueRows;
 
-    // Panel pour les années selon le cycle
     JPanel anneesPanel;
     ButtonGroup anneesGroup;
     HashMap<String, String[]> cycleAnnees;
@@ -30,11 +29,17 @@ public class FormPanel extends JPanel {
         this.gp = gp;
         this.pseudo = pseudo;
         this.langueRows = new ArrayList<LangueRow>();
+        this.p= DataProfil.getProfilByPseudo(pseudo);
+
+        if (this.p == null) {
+            System.err.println("Attention: Profil non trouvé pour le pseudo: " + pseudo);
+            this.p = new Profil("Inconnu", "Inconnu", pseudo);
+        }
 
         // Définir les années pour chaque cycle
         cycleAnnees = new HashMap<String, String[]>();
-        cycleAnnees.put("1er Cycle", new String[]{"1ère année", "2ème année", "3ème année"});
-        cycleAnnees.put("2ème Cycle", new String[]{"4ème année", "5ème année"});
+        cycleAnnees.put("1er Cycle", new String[]{"1ère année", "2ème année" });
+        cycleAnnees.put("2ème Cycle", new String[]{"3ème année","4ème année", "5ème année"});
         cycleAnnees.put("3ème Cycle", new String[]{"6ème année", "7ème année", "8ème année"});
 
         this.setLayout(new BorderLayout(10, 10));
@@ -44,7 +49,7 @@ public class FormPanel extends JPanel {
         // Panel supérieur avec message de bienvenue
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         topPanel.setBackground(new Color(240, 245, 250));
-        labelMessage = new JLabel("Bonjour " + gp.nomf.getText() + " " + gp.prenomf.getText());
+        labelMessage = new JLabel("Bonjour " + p.getNom() + " " + p.getPrenom());
         labelMessage.setFont(new Font("Arial", Font.BOLD, 16));
         labelMessage.setForeground(new Color(41, 128, 185));
         topPanel.add(labelMessage);
@@ -98,8 +103,8 @@ public class FormPanel extends JPanel {
         languesPanel.setLayout(new BoxLayout(languesPanel, BoxLayout.Y_AXIS));
         languesPanel.setBackground(Color.WHITE);
 
-        // Ajouter une première langue par défaut (Français)
-        LangueRow firstRow = new LangueRow(this, "Français");
+
+        LangueRow firstRow = new LangueRow(this, "Arabe");
         langueRows.add(firstRow);
         languesPanel.add(firstRow.getPanel());
 
@@ -116,7 +121,7 @@ public class FormPanel extends JPanel {
         btnAddLangue.setBorderPainted(false);
         btnAddLangue.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Utiliser une classe anonyme au lieu d'un lambda
+
         btnAddLangue.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -224,30 +229,8 @@ public class FormPanel extends JPanel {
         btnClose.setBorderPainted(false);
         btnClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Effets de survol - utiliser MouseAdapter au lieu de lambda
-        btnSave.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                btnSave.setBackground(new Color(39, 174, 96));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                btnSave.setBackground(new Color(46, 204, 113));
-            }
-        });
-
-        btnClose.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                btnClose.setBackground(new Color(192, 57, 43));
-            }
-
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                btnClose.setBackground(new Color(231, 76, 60));
-            }
-        });
+        btnSave.addMouseListener(new EcouteurDash(this));
+        btnClose.addMouseListener(new EcouteurDash(this));
 
         bottomPanel.add(btnSave);
         bottomPanel.add(btnClose);
@@ -277,12 +260,12 @@ public class FormPanel extends JPanel {
     }
 
     private void handleSaveAction() {
-        String nom = gp.nomf.getText();
-        String prenom = gp.prenomf.getText();
+
+
         String cycleSelectionne = (String) comboCycle.getSelectedItem();
         int anneeSelectionnee = (int) spinnerAnnee.getValue();
 
-        // Récupérer l'année sélectionnée
+
         String anneeEtude = getSelectedAnnee();
         if (anneeEtude == null) {
             JOptionPane.showMessageDialog(FormPanel.this,
@@ -314,9 +297,9 @@ public class FormPanel extends JPanel {
         String languesStr = languesInfo.substring(0, languesInfo.length() - 2);
 
 
-        Profil nouveauProfil = new Profil(nom, prenom, pseudo, languesStr,
+        Profil nouveauProfil = new Profil(p.getNom(), p.getPrenom(), pseudo, languesStr,
                 cycleSelectionne, anneeEtude, anneeSelectionnee);
-        DataProfil.addProfil(nouveauProfil);
+        DataProfil.updateProfil(nouveauProfil);
 
 
         for (int i = 0; i < gp.model.getSize(); i++) {
@@ -330,8 +313,8 @@ public class FormPanel extends JPanel {
         // Message de confirmation
         JOptionPane.showMessageDialog(FormPanel.this,
                 "Profil sauvegardé avec succès!\n\n" +
-                        "Nom: " + nom + "\n" +
-                        "Prénom: " + prenom + "\n" +
+                        "Nom: " + p.getNom() + "\n" +
+                        "Prénom: " + p.getPrenom()+ "\n" +
                         "Pseudo: " + pseudo + "\n" +
                         "Langues: " + languesStr + "\n" +
                         "Cycle: " + cycleSelectionne + "\n" +
@@ -355,12 +338,9 @@ public class FormPanel extends JPanel {
     }
 
     private void addLangueRow() {
-        // Créer une liste des langues disponibles
         String[] languesDisponibles = {"Arabe", "Français", "Anglais", "Allemand",
-                "Espagnol", "Italien", "Chinois", "Japonais",
-                "Russe", "Portugais", "Turc"};
+                "Espagnol", "Italien", "Chinois"};
 
-        // Créer une liste des langues déjà ajoutées
         ArrayList<String> languesAjoutees = new ArrayList<String>();
         for (int i = 0; i < langueRows.size(); i++) {
             LangueRow row = langueRows.get(i);
@@ -370,7 +350,6 @@ public class FormPanel extends JPanel {
             }
         }
 
-        // Filtrer les langues disponibles
         ArrayList<String> languesRestantes = new ArrayList<String>();
         for (int i = 0; i < languesDisponibles.length; i++) {
             String langue = languesDisponibles[i];

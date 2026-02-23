@@ -9,6 +9,17 @@ public class DataProfil {
         data.add(p);
     }
 
+    public static void updateProfil(Profil p) {
+        for (int i = 0; i < data.size(); i++) {
+            if (data.get(i).getPseudo().equals(p.getPseudo())) {
+                data.set(i, p); // Remplacer l'ancien profil par le nouveau
+                return;
+            }
+        }
+
+        data.add(p);
+    }
+
     public static ArrayList<Profil> getData() {
         return data;
     }

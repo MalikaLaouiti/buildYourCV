@@ -46,6 +46,8 @@ public class GestionProfile extends JFrame {
         jtp = new JTabbedPane();
         ps = new JPanel();
 
+        save.setBackground(Color.GRAY);
+        save.setForeground(Color.white);
         nomf.setToolTipText("Votre nom");
         prenomf.setToolTipText("Votre prenom");
         pseudof.setToolTipText("Votre pseudo");
