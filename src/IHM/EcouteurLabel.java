@@ -13,13 +13,13 @@ public class EcouteurLabel extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         if (e.getSource() == this.gp.nom) {
-            this.gp.nom.setForeground(Color.red);
+            this.gp.nom.setForeground(new Color(161, 29, 77));
         }
         if (e.getSource() == this.gp.prenom) {
-            this.gp.prenom.setForeground(Color.red);
+            this.gp.prenom.setForeground(new Color(161, 29, 77));
         }
         if (e.getSource() == this.gp.pseudo) {
-            this.gp.pseudo.setForeground(Color.red);
+            this.gp.pseudo.setForeground(new Color(161, 29, 77));
         }
     }
 

@@ -8,12 +8,12 @@ public class Test {
         System.out.println("Star..");
         Connection con= DataBaseConnection.makeConnection();
         //Execution Requete
-
+        EtudiantImplementation implementation= new EtudiantImplementation();
+        int a = implementation.insertEtudiant(14045156,"LAOUI","Malika",15);
         String requete_selection="select * from etudiant";
         if (con!=null) {
             try {
-                Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(requete_selection);
+                ResultSet rs = implementation.selectEtudiant(requete_selection);
                 ResultSetMetaData rsmd=rs.getMetaData();
                 int nbCol= rsmd.getColumnCount();
                 for (int i=0;i<nbCol;i++){
@@ -34,3 +34,4 @@ public class Test {
         }
     }
 }
+//fonction delete et modifier

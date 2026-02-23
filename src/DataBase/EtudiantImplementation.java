@@ -1,9 +1,6 @@
 package DataBase;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class EtudiantImplementation implements EtudinatDAO{
 
@@ -14,12 +11,19 @@ public class EtudiantImplementation implements EtudinatDAO{
 
     @Override
     public int insertEtudiant(int CIN, String nom, String prenom, double moyenne) {
-        String requete_insertion="insert into Etudiant values ("+CIN+","+nom+","+prenom+","+moyenne+")";
+        String requete_insertion="insert into Etudiant values (?,?,?,?)";
         if (con!=null){
-            Statement st= null;
+
             try {
-                st = con.createStatement();
-                int a= st.executeUpdate(requete_insertion);
+                //on utilise prepared statement pour eviter construit insert en fonction de parametre
+                PreparedStatement ps= con.prepareStatement(requete_insertion);
+
+                ps.setInt(1,CIN);
+                ps.setString(2,nom);
+                ps.setString(3,prenom);
+                ps.setDouble(4,moyenne);
+
+                int a= ps.executeUpdate();
                 if (a>0){
                     System.out.println("done, inserted");
                     return a;
@@ -43,6 +47,15 @@ public class EtudiantImplementation implements EtudinatDAO{
 
     @Override
     public ResultSet selectEtudiant(String requeteSelection) {
+        if (con!=null) {
+            try {
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(requeteSelection);
+                return rs;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
         return null;
     }
 

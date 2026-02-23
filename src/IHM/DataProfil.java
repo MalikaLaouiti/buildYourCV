@@ -12,4 +12,13 @@ public class DataProfil {
     public static ArrayList<Profil> getData() {
         return data;
     }
+
+    public static Profil getProfilByPseudo(String pseudo) {
+        for (Profil p : data) {
+            if (p.getPseudo().equals(pseudo)) {
+                return p;
+            }
+        }
+        return null;
+    }
 }

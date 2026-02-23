@@ -46,6 +46,10 @@ public class GestionProfile extends JFrame {
         jtp = new JTabbedPane();
         ps = new JPanel();
 
+        nomf.setToolTipText("Votre nom");
+        prenomf.setToolTipText("Votre prenom");
+        pseudof.setToolTipText("Votre pseudo");
+
         p.add(nom);
         p.add(nomf);
         p.add(prenom);
@@ -55,18 +59,21 @@ public class GestionProfile extends JFrame {
         p.add(save);
 
         jl.setModel(model);
-        model.addElement("A");
-        model.addElement("B");
-        model.addElement("C");
+        //model.addElement("A");
+        //model.addElement("B");
+        //model.addElement("C");
 
 
-        jtp.addTab("T1", new JPanel());
-        jtp.addTab("T2", new JPanel());
+        //jtp.addTab("T1", new JPanel());
+        //jtp.addTab("T2", new JPanel());
 
         jsp.setLeftComponent(jl);
         jsp.setRightComponent(jtp);
+        jsp.setDividerLocation(150);
 
         save.addActionListener(new EcouteurDash(this));
+        save.addMouseListener(new EcouteurDash(this));
+
         ecouteurlabel = new EcouteurLabel(this);
         ecouteurtextfild = new EcouteurTextField(this);
 
