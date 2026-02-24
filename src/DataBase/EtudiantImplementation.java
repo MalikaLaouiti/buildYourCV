@@ -1,11 +1,10 @@
 package DataBase;
 
 import java.sql.*;
-
-public class EtudiantImplementation implements EtudinatDAO{
+ public class EtudiantImplementation implements EtudinatDAO{
 
     Connection con= null;
-    EtudiantImplementation (){
+    public EtudiantImplementation(){
         con= DataBaseConnection.makeConnection();
     }
 
