@@ -5,8 +5,8 @@ public class Test {
         System.out.println("Debut PP");
         Traitement ta=new Traitement("A");
         Traitement tb=new Traitement("B");
-        ta.run();
-        tb.run();
+        ta.start();
+        tb.start();
         System.out.println("Fin PP");
     }
 }
