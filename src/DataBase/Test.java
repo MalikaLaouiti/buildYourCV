@@ -1,6 +1,5 @@
 package DataBase;
 
-import java.awt.*;
 import java.sql.*;
 
 public class Test {
