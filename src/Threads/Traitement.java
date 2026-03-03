@@ -1,6 +1,6 @@
 package Threads;
 
-public class Traitement {
+public class Traitement extends Thread {
     String nom;
 
     public Traitement(String nom) {
