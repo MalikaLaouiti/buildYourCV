@@ -69,7 +69,7 @@ public class FrameAnimation extends JFrame {
         public void run() {
             while (true) {
                 System.out.println(isRunning);
-                while (isRunning && x < 800 && y<yf) {
+                while (isRunning && x < xf && x>=xi) {
                     x += pas;
                     y +=pas;
                     pa.repaint();
@@ -82,7 +82,7 @@ public class FrameAnimation extends JFrame {
                         isRunning=false;
                     }
                 }
-                if(x>=800){
+                if(x>=xf){
                     pas*=-1;
                     x+=pas;
                 }
