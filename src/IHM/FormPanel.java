@@ -68,7 +68,6 @@ public class FormPanel extends JPanel {
                 new EmptyBorder(15, 15, 15, 15)
         ));
 
-        // Section Pseudo
         JPanel pseudoPanel = createFieldPanel();
         JLabel labelPseudo = new JLabel("Pseudo :");
         labelPseudo.setFont(new Font("Arial", Font.BOLD, 12));
@@ -85,7 +84,6 @@ public class FormPanel extends JPanel {
         centerPanel.add(pseudoPanel);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Section Langues avec étoiles
         JPanel languesSectionPanel = new JPanel();
         languesSectionPanel.setLayout(new BoxLayout(languesSectionPanel, BoxLayout.Y_AXIS));
         languesSectionPanel.setBackground(Color.WHITE);
@@ -135,7 +133,6 @@ public class FormPanel extends JPanel {
         centerPanel.add(languesSectionPanel);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Section Cycle
         JPanel cycleSectionPanel = new JPanel();
         cycleSectionPanel.setLayout(new BoxLayout(cycleSectionPanel, BoxLayout.Y_AXIS));
         cycleSectionPanel.setBackground(Color.WHITE);
@@ -164,20 +161,17 @@ public class FormPanel extends JPanel {
         cycleSectionPanel.add(cyclePanel);
         cycleSectionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Panel pour les radio buttons des années
         anneesPanel = new JPanel();
         anneesPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 5));
         anneesPanel.setBackground(Color.WHITE);
         anneesGroup = new ButtonGroup();
 
-        // Initialiser avec le premier cycle
         updateAnneesPanel((String) comboCycle.getSelectedItem());
 
         cycleSectionPanel.add(anneesPanel);
         centerPanel.add(cycleSectionPanel);
         centerPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Listener pour changer les années selon le cycle
         comboCycle.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -202,12 +196,10 @@ public class FormPanel extends JPanel {
         anneeAcadPanel.add(spinnerAnnee);
         centerPanel.add(anneeAcadPanel);
 
-        // Wrapper pour le scroll
         JScrollPane scrollPane = new JScrollPane(centerPanel);
         scrollPane.setBorder(null);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-        // Panel inférieur avec les boutons
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         bottomPanel.setBackground(new Color(240, 245, 250));
 
@@ -235,12 +227,10 @@ public class FormPanel extends JPanel {
         bottomPanel.add(btnSave);
         bottomPanel.add(btnClose);
 
-        // Ajouter les panels au layout principal
         this.add(topPanel, BorderLayout.NORTH);
         this.add(scrollPane, BorderLayout.CENTER);
         this.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Action listeners - utiliser des classes anonymes
         btnClose.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -257,14 +247,12 @@ public class FormPanel extends JPanel {
                 handleSaveAction();
             }
         });
+        preRemplirDonnees();
     }
 
     private void handleSaveAction() {
-
-
         String cycleSelectionne = (String) comboCycle.getSelectedItem();
         int anneeSelectionnee = (int) spinnerAnnee.getValue();
-
 
         String anneeEtude = getSelectedAnnee();
         if (anneeEtude == null) {
@@ -275,7 +263,6 @@ public class FormPanel extends JPanel {
             return;
         }
 
-        // Récupérer les langues et niveaux
         StringBuilder languesInfo = new StringBuilder();
         for (int i = 0; i < langueRows.size(); i++) {
             LangueRow row = langueRows.get(i);
@@ -436,4 +423,59 @@ public class FormPanel extends JPanel {
         }
         return null;
     }
+
+    private void preRemplirDonnees() {
+        if (p == null) return;
+
+        if (p.getCycle() != null) {
+            for (int i = 0; i < cycles.length; i++) {
+                if (cycles[i].equals(p.getCycle())) {
+                    comboCycle.setSelectedIndex(i);
+                    break;
+                }
+            }
+            updateAnneesPanel(p.getCycle());
+        }
+
+        if (p.getAnneeEtude() != null) {
+            Component[] comps = anneesPanel.getComponents();
+            for (Component comp : comps) {
+                if (comp instanceof JRadioButton) {
+                    JRadioButton rb = (JRadioButton) comp;
+                    if (rb.getText().equals(p.getAnneeEtude())) {
+                        rb.setSelected(true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (p.getAnneeAcademique() > 0) {
+            spinnerAnnee.setValue(p.getAnneeAcademique());
+        }
+
+        if (p.getLangues() != null && !p.getLangues().isEmpty()) {
+            languesPanel.removeAll();
+            langueRows.clear();
+
+            String[] langueEntries = p.getLangues().split(", ");
+            for (String entry : langueEntries) {
+                String langue = entry.replaceAll("\\s*\\(.*\\)", "").trim();
+                int niveau = 0;
+                try {
+                    String niveauStr = entry.replaceAll(".*\\((\\d+).*\\).*", "$1");
+                    niveau = Integer.parseInt(niveauStr);
+                } catch (Exception ignored) {}
+
+                LangueRow row = new LangueRow(this, langue);
+                row.setNiveau(niveau);
+                langueRows.add(row);
+                languesPanel.add(row.getPanel());
+            }
+
+            languesPanel.revalidate();
+            languesPanel.repaint();
+        }
+    }
+
 }

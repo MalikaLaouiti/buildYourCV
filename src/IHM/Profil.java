@@ -56,7 +56,7 @@ public class Profil {
 
     @Override
     public String toString() {
-        return pseudo + " (" + nom + " " + prenom + ")";
+        return pseudo;
     }
 
     public String toDetailedString() {

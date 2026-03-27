@@ -61,14 +61,6 @@ public class GestionProfile extends JFrame {
         p.add(save);
 
         jl.setModel(model);
-        //model.addElement("A");
-        //model.addElement("B");
-        //model.addElement("C");
-
-
-        //jtp.addTab("T1", new JPanel());
-        //jtp.addTab("T2", new JPanel());
-
         jsp.setLeftComponent(jl);
         jsp.setRightComponent(jtp);
         jsp.setDividerLocation(150);
@@ -81,23 +73,7 @@ public class GestionProfile extends JFrame {
 
         ps.setLayout(new FlowLayout(FlowLayout.LEFT));
         ps.add(help);
-        jl.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                {
-                    if (e.getClickCount()==2) {
-                        String ps = jl.getSelectedValue();
-                        FormPanel form = new FormPanel(GestionProfile.this,ps);
-                        jtp.addTab(ps, form);
-
-                    }
-                    if(e.getButton()==MouseEvent.BUTTON3){
-                        MyPopUpMenu popup=new MyPopUpMenu(jl,model,jtp);
-                        popup.show(jl,e.getX(),e.getY());
-                    }
-                }
-            }
-        });
+        jl.addMouseListener(new EcouteurDash(this));
 
         this.add(p, BorderLayout.NORTH);
         this.add(jsp, BorderLayout.CENTER);
@@ -111,5 +87,20 @@ public class GestionProfile extends JFrame {
         prenomf.addMouseListener(ecouteurtextfild);
         pseudof.addMouseListener(ecouteurtextfild);
 
+    }
+
+    private JButton getCloseBtn(FormPanel form) {
+        JButton closeBtn = new JButton("X");
+        closeBtn.setFont(new Font("Arial", Font.BOLD, 10));
+        closeBtn.setPreferredSize(new Dimension(18, 18));
+        closeBtn.setFocusPainted(false);
+        closeBtn.setBorderPainted(false);
+        closeBtn.setContentAreaFilled(false);
+        closeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        closeBtn.addActionListener(ev -> {
+            int idx = jtp.indexOfComponent(form);
+            if (idx != -1) jtp.remove(idx);
+        });
+        return closeBtn;
     }
 }

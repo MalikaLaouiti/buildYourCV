@@ -154,7 +154,7 @@ public class LangueRow {
         return new ImageIcon(img);
     }
 
-    private void setNiveau(int n) {
+    public void setNiveau(int n) {
         niveau = n;
         updateStars();
         niveauLabel.setText("(" + niveau + "/5)");
