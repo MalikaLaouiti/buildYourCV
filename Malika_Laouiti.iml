@@ -81,7 +81,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="iText7-Core-7.1" level="project" />
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
@@ -91,5 +90,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="iText-7.2.5" level="project" />
+    <orderEntry type="library" name="jcalendar-1.4" level="project" />
   </component>
 </module>

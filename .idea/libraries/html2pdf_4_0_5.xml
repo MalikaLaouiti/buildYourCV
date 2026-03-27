@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="html2pdf-4.0.5">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Downloads/iText7-pdfHtml-4.0.5-only-jars/html2pdf-4.0.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

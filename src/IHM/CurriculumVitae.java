@@ -5,6 +5,7 @@ import IHM.CV.Components.CVFooterPanel;
 import IHM.CV.Components.CVHeaderPanel;
 import IHM.CV.Services.Data;
 import IHM.CV.Services.Generator;
+import IHM.CV.Services.PDFExporter;
 import IHM.CV.Services.Validator;
 
 import javax.swing.*;
@@ -56,10 +57,8 @@ public class CurriculumVitae extends JFrame {
     }
 
     private void genererCV() {
-        // Récupérer les données du formulaire
         Data data = formPanel.getCVData();
 
-        // Valider les données
         Validator.ValidationResult validation = validator.validate(data);
         if (!validation.isValid()) {
             JOptionPane.showMessageDialog(this,
@@ -69,7 +68,6 @@ public class CurriculumVitae extends JFrame {
             return;
         }
 
-        // Afficher les warnings si nécessaire
         if (!validation.getWarnings().isEmpty()) {
             int result = JOptionPane.showConfirmDialog(this,
                     "Attention:\n" + String.join("\n", validation.getWarnings()) +
@@ -77,42 +75,48 @@ public class CurriculumVitae extends JFrame {
                     "Avertissement",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE);
-            if (result != JOptionPane.YES_OPTION) {
-                return;
-            }
+            if (result != JOptionPane.YES_OPTION) return;
         }
 
         try {
-            // Générer le CV
-            String fileName = "CV_" + data.getNom() + "_" + data.getPrenom() + ".html";
-            File file = generator.generateHTML(data, fileName);
+            String baseName = "CV_" + data.getNom() + "_" + data.getPrenom();
 
-            // Message de confirmation
-            String message = "CV généré avec succès!\n\n";
-            message += "Fichier: " + file.getAbsolutePath() + "\n";
-            message += "Taille: " + file.length() + " octets";
+            // --- Génération HTML (existante, ne change pas) ---
+            String htmlFileName = baseName + ".html";
+            File htmlFile = generator.generateHTML(data, htmlFileName);
 
+            // --- Export PDF (nouveau) ---
             if (footerPanel.isExportPDFSelected()) {
-                message += "\n\nNote: L'export PDF sera disponible prochainement.";
+                String htmlContent = new String(
+                        java.nio.file.Files.readAllBytes(htmlFile.toPath()),
+                        java.nio.charset.StandardCharsets.UTF_8
+                );
+                String pdfFileName = baseName + ".pdf";
+                PDFExporter pdfExporter = new PDFExporter();
+                pdfExporter.exportCVToPDF(htmlContent, pdfFileName);
+
+                JOptionPane.showMessageDialog(this,
+                        "CV exporté en HTML et PDF avec succès !\n" +
+                                "HTML : " + htmlFile.getAbsolutePath() + "\n" +
+                                "PDF  : " + new java.io.File(pdfFileName).getAbsolutePath(),
+                        "Succès", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "CV généré avec succès !\nFichier : " + htmlFile.getAbsolutePath(),
+                        "Succès", JOptionPane.INFORMATION_MESSAGE);
             }
 
-            JOptionPane.showMessageDialog(this, message, "Succès",
-                    JOptionPane.INFORMATION_MESSAGE);
-
-            // Option pour ouvrir le fichier
             int openFile = JOptionPane.showConfirmDialog(this,
                     "Voulez-vous ouvrir le fichier généré ?",
-                    "Ouvrir le CV",
-                    JOptionPane.YES_NO_OPTION);
+                    "Ouvrir le CV", JOptionPane.YES_NO_OPTION);
             if (openFile == JOptionPane.YES_OPTION) {
-                Desktop.getDesktop().open(file);
+                Desktop.getDesktop().open(htmlFile);
             }
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
-                    "Erreur lors de la génération du CV:\n" + e.getMessage(),
-                    "Erreur",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Erreur lors de la génération du CV :\n" + e.getMessage(),
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
