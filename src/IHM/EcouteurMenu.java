@@ -10,6 +10,7 @@ class EcouteurMenu implements ActionListener {
     public EcouteurMenu(Dash d1){
         this.dashboard=d1;
     }
+
     public EcouteurMenu(GestionProfile gestProfile){
         this.gestionProfile=gestProfile;
     }
@@ -26,6 +27,10 @@ class EcouteurMenu implements ActionListener {
         if (e.getSource()==dashboard.itemBorder){
             FrameBorder border=new FrameBorder();
             border.setVisible(true);
+        }
+        if (e.getSource()==dashboard.itemCurri){
+            CurriculumVitae cv=new CurriculumVitae();
+            cv.setVisible(true);
         }
         if (e.getSource()==dashboard.itemGestPro){
             GestionProfile profile=new GestionProfile();
