@@ -27,12 +27,14 @@ public class HandleClient extends  Thread{
             String id = br.readLine();
             System.out.println(id);
 
-            Read readmsg=new Read(br);
-            readmsg.start();
+            CustomSocket custom=new CustomSocket(id,s);
+            SocketManager.list_Of_Socket.add(custom);
 
-            Scanner sc=new Scanner(System.in);
-            Write writemsg=new Write(pw,sc);
-            writemsg.run();
+            new Read(br).start();
+
+//            Scanner sc=new Scanner(System.in);
+//            Write writemsg=new Write(pw,sc);
+//            writemsg.run();
 
         } catch (IOException e) {
             throw new RuntimeException(e);

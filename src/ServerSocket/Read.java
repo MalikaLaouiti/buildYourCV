@@ -15,8 +15,9 @@ public class Read extends Thread{
     public void run() {
         try {
             while (true) {
-                String line = br.readLine();
-                System.out.println(line);
+                String msg = br.readLine();
+                System.out.println(msg);
+                SocketManager.diffuserMessage(msg);
             }
         } catch (IOException e) {
             System.out.println("Error Server"+e.getMessage());
