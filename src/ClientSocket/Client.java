@@ -1,10 +1,12 @@
-package ServerSocket;
+package ClientSocket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) {
@@ -17,6 +19,13 @@ public class Client {
             BufferedReader br=new BufferedReader(new InputStreamReader(s.getInputStream()));
             String line=br.readLine();
             System.out.println(line);
+            //envoie
+            Scanner sc=new Scanner(System.in);
+            String id= sc.nextLine();
+
+            PrintWriter pw =new PrintWriter(s.getOutputStream());
+            pw.println(id);
+            pw.flush();
 
         }catch (IOException e){
             System.out.println("Error Server"+e.getMessage());
