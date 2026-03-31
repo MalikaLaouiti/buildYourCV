@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class HandleClient extends  Thread{
     Socket s;
@@ -15,7 +16,7 @@ public class HandleClient extends  Thread{
 
     @Override
     public void run() {
-        //ecriture
+
 
         try {
             PrintWriter pw = new PrintWriter(s.getOutputStream());
@@ -25,6 +26,14 @@ public class HandleClient extends  Thread{
             BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             String id = br.readLine();
             System.out.println(id);
+
+            Read readmsg=new Read(br);
+            readmsg.start();
+
+            Scanner sc=new Scanner(System.in);
+            Write writemsg=new Write(pw,sc);
+            writemsg.run();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

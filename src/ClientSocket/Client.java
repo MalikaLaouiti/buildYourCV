@@ -1,5 +1,8 @@
 package ClientSocket;
 
+import ServerSocket.Read;
+import ServerSocket.Write;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,6 +28,12 @@ public class Client {
             PrintWriter pw =new PrintWriter(s.getOutputStream());
             pw.println(id);
             pw.flush();
+
+            Read readmsg=new Read(br);
+            readmsg.start();
+
+            Write writemsg=new Write(pw,sc);
+            writemsg.run();
 
         }catch (IOException e){
             System.out.println("Error Server"+e.getMessage());
