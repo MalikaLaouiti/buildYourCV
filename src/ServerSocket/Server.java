@@ -9,22 +9,19 @@ import java.net.Socket;
 
 public class Server {
     public static void main(String[] args) {
+        int nbClient=0;
         System.out.println("Starting Server ..");
         try {
             ServerSocket server =new ServerSocket(9004);
             System.out.println("Server waiting");
-            Socket s=server.accept();
-            System.out.println("client connected");
+            while (nbClient<3) {
+                Socket s = server.accept();
+                System.out.println("client connected"+nbClient);
+                nbClient++;
 
-            //ecriture
-            PrintWriter pw =new PrintWriter(s.getOutputStream());
-            pw.println("Envoyer votre ID");
-            pw.flush();
-            //lecture
-            BufferedReader br=new BufferedReader(new InputStreamReader(s.getInputStream()));
-            String id=br.readLine();
-            System.out.println(id);
-
+                HandleClient handler=new HandleClient(s);
+                handler.start();
+            }
         }catch (IOException e){
             System.out.println("Error Server"+e.getMessage());
         }
