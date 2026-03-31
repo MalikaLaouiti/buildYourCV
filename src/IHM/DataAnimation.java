@@ -60,7 +60,7 @@ public class DataAnimation extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(new Color(255, 220, 80));
+        g.setColor(new Color(250, 200, 150));
         g.setFont(new Font("Monospaced", Font.BOLD, 16));
         g.drawString(new Date().toLocaleString(), x, y + 16);
     }
