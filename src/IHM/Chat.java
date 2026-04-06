@@ -1,403 +1,521 @@
 package IHM;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.awt.geom.RoundRectangle2D;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.List;
+
 public class Chat extends JFrame {
 
-
     // ── Palette ──────────────────────────────────────────────────────────────
-    private static final Color BG_DARK      = new Color(13, 17, 23);
-    private static final Color BG_PANEL     = new Color(22, 27, 34);
-    private static final Color BG_INPUT     = new Color(33, 38, 45);
-    private static final Color ACCENT       = new Color(88, 166, 255);
-    private static final Color ACCENT_DARK  = new Color(56, 139, 253);
-    private static final Color MSG_SELF_BG  = new Color(31, 111, 235);
-    private static final Color MSG_OTHER_BG = new Color(33, 38, 45);
-    private static final Color TEXT_PRIMARY = new Color(230, 237, 243);
-    private static final Color TEXT_MUTED   = new Color(125, 133, 144);
-    private static final Color BORDER_COLOR = new Color(48, 54, 61);
-    private static final Color ONLINE_GREEN = new Color(63, 185, 80);
+    static final Color BG_SIDEBAR   = new Color(24,  28,  40);
+    static final Color BG_CHAT      = new Color(17,  20,  30);
+    static final Color BG_INPUT     = new Color(30,  34,  50);
+    static final Color ACCENT       = new Color(99, 179, 237);
+    static final Color ACCENT_DARK  = new Color(49, 130, 206);
+    static final Color BUBBLE_ME    = new Color(49, 130, 206);
+    static final Color BUBBLE_OTHER = new Color(38,  42,  60);
+    static final Color TEXT_PRIMARY = new Color(237, 242, 247);
+    static final Color TEXT_MUTED   = new Color(113, 128, 150);
+    static final Color ONLINE_DOT   = new Color(72,  187, 120);
+    static final Color DIVIDER      = new Color(45,  50,  70);
+    static final Color HOVER_ITEM   = new Color(35,  40,  58);
+    static final Color SELECTED_ITEM= new Color(44,  51,  74);
 
-    // ── Fonts ─────────────────────────────────────────────────────────────────
-    private static final Font FONT_TITLE   = new Font("SansSerif", Font.BOLD, 15);
-    private static final Font FONT_MSG     = new Font("SansSerif", Font.PLAIN, 14);
-    private static final Font FONT_TIME    = new Font("SansSerif", Font.PLAIN, 11);
-    private static final Font FONT_INPUT   = new Font("SansSerif", Font.PLAIN, 14);
-    private static final Font FONT_STATUS  = new Font("SansSerif", Font.PLAIN, 12);
+    // ── Data ─────────────────────────────────────────────────────────────────
+    static final String ME = "Moi";
+    static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-    // ── Composants ────────────────────────────────────────────────────────────
-    private JPanel  messagesPanel;
-    private JScrollPane scrollPane;
-    private JTextArea inputField;
-    private JButton sendButton;
-    private JLabel  statusLabel;
-    private JLabel  typingLabel;
+    record Client(String name, String avatar, boolean online, String lastMsg) {}
+    record Message(String sender, String text, LocalTime time) {}
 
-    private final String myUsername;
-    private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+    List<Client> clients = List.of(
+            new Client("Alice Martin",   "AM", true,  "D'accord, je regarde ça !"),
+            new Client("Bob Dupont",     "BD", true,  "Merci pour l'info 👍"),
+            new Client("Clara Moreau",   "CM", false, "On se parle demain ?"),
+            new Client("David Leroy",    "DL", true,  "Fichier reçu, merci."),
+            new Client("Emma Bernard",   "EB", false, "Super, bonne continuation !"),
+            new Client("François Petit", "FP", true,  "Je suis disponible à 14h")
+    );
+
+    Map<String, List<Message>> conversations = new HashMap<>();
+    String selectedClient = null;
+
+    // ── UI Components ─────────────────────────────────────────────────────────
+    JPanel chatMessagesPanel;
+    JScrollPane chatScroll;
+    JTextField inputField;
+    JButton sendButton;
+    JLabel chatHeaderName, chatHeaderStatus;
+    JLabel chatHeaderAvatar;
+    JPanel clientListPanel;
+
+    public Chat() {
+        initConversations();
+        buildUI();
+        selectClient(clients.get(0).name());
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
-    public Chat(String username, String peerName) {
-        this.myUsername = username;
+    void initConversations() {
+        conversations.put("Alice Martin", new ArrayList<>(List.of(
+                new Message("Alice Martin", "Bonjour ! Tu as reçu le rapport ?", LocalTime.of(9, 10)),
+                new Message(ME,             "Oui, je l'ai eu ce matin.",          LocalTime.of(9, 12)),
+                new Message("Alice Martin", "D'accord, je regarde ça !",          LocalTime.of(9, 13))
+        )));
+        conversations.put("Bob Dupont", new ArrayList<>(List.of(
+                new Message(ME,          "Réunion confirmée pour demain.",  LocalTime.of(10, 0)),
+                new Message("Bob Dupont","Merci pour l'info 👍",            LocalTime.of(10, 5))
+        )));
+        for (Client c : clients) {
+            conversations.putIfAbsent(c.name(), new ArrayList<>());
+        }
+    }
 
-        setTitle("Chat — " + peerName);
+    // ─────────────────────────────────────────────────────────────────────────
+    void buildUI() {
+        setTitle("Chat — Espace Client");
+        setSize(1000, 680);
+        setMinimumSize(new Dimension(800, 500));
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(480, 720);
-        setMinimumSize(new Dimension(380, 500));
         setLocationRelativeTo(null);
-        getContentPane().setBackground(BG_DARK);
+        getContentPane().setBackground(BG_CHAT);
         setLayout(new BorderLayout());
 
-        add(buildHeader(peerName), BorderLayout.NORTH);
-        add(buildMessagesArea(),   BorderLayout.CENTER);
-        add(buildInputBar(),       BorderLayout.SOUTH);
-
-        setVisible(true);
-
-        // Message de bienvenue (supprime si tu n'en veux pas)
-        appendMessage("Système", "Connexion établie avec " + peerName + " ✓", false, true);
+        add(buildSidebar(), BorderLayout.WEST);
+        add(buildChatArea(), BorderLayout.CENTER);
     }
 
-    // ── Header ────────────────────────────────────────────────────────────────
-    private JPanel buildHeader(String peerName) {
-        JPanel header = new JPanel(new BorderLayout()) {
+    // ── Sidebar ───────────────────────────────────────────────────────────────
+    JPanel buildSidebar() {
+        JPanel sidebar = new JPanel(new BorderLayout());
+        sidebar.setPreferredSize(new Dimension(280, 0));
+        sidebar.setBackground(BG_SIDEBAR);
+        sidebar.setBorder(new MatteBorder(0, 0, 0, 1, DIVIDER));
+
+        // Header sidebar
+        JPanel sideHeader = new JPanel(new BorderLayout());
+        sideHeader.setBackground(BG_SIDEBAR);
+        sideHeader.setBorder(new EmptyBorder(20, 18, 12, 18));
+
+        JLabel title = new JLabel("Messages");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        title.setForeground(TEXT_PRIMARY);
+
+        JLabel badge = new JLabel("" + clients.stream().filter(Client::online).count() + " en ligne");
+        badge.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        badge.setForeground(ONLINE_DOT);
+
+        sideHeader.add(title, BorderLayout.CENTER);
+        sideHeader.add(badge, BorderLayout.SOUTH);
+
+        // Search bar
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.setBackground(BG_SIDEBAR);
+        searchPanel.setBorder(new EmptyBorder(0, 14, 14, 14));
+
+        JTextField search = new JTextField();
+        search.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        search.setBackground(HOVER_ITEM);
+        search.setForeground(TEXT_PRIMARY);
+        search.setCaretColor(ACCENT);
+        search.setBorder(new CompoundBorder(
+                new LineBorder(DIVIDER, 1, true),
+                new EmptyBorder(7, 12, 7, 12)
+        ));
+        search.putClientProperty("JTextField.placeholderText", "Rechercher…");
+
+        JLabel searchIcon = new JLabel("🔍");
+        searchIcon.setBorder(new EmptyBorder(0, 8, 0, 4));
+
+        searchPanel.add(searchIcon, BorderLayout.WEST);
+        searchPanel.add(search, BorderLayout.CENTER);
+
+        // Client list
+        clientListPanel = new JPanel();
+        clientListPanel.setLayout(new BoxLayout(clientListPanel, BoxLayout.Y_AXIS));
+        clientListPanel.setBackground(BG_SIDEBAR);
+
+        for (Client c : clients) {
+            clientListPanel.add(buildClientRow(c));
+        }
+
+        JScrollPane listScroll = new JScrollPane(clientListPanel);
+        listScroll.setBorder(null);
+        listScroll.getViewport().setBackground(BG_SIDEBAR);
+        listScroll.getVerticalScrollBar().setUnitIncrement(12);
+        styleScrollBar(listScroll);
+
+        JPanel topPart = new JPanel(new BorderLayout());
+        topPart.setBackground(BG_SIDEBAR);
+        topPart.add(sideHeader, BorderLayout.NORTH);
+        topPart.add(searchPanel, BorderLayout.SOUTH);
+
+        sidebar.add(topPart,    BorderLayout.NORTH);
+        sidebar.add(listScroll, BorderLayout.CENTER);
+
+        return sidebar;
+    }
+
+    JPanel buildClientRow(Client c) {
+        JPanel row = new JPanel(new BorderLayout(12, 0));
+        row.setBackground(BG_SIDEBAR);
+        row.setBorder(new EmptyBorder(10, 14, 10, 14));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Avatar
+        JLabel avatar = new JLabel(c.avatar(), SwingConstants.CENTER) {
             @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(avatarColor(c.name()));
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.dispose();
                 super.paintComponent(g);
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setColor(BG_PANEL);
-                g2.fillRect(0, 0, getWidth(), getHeight());
-                // bottom border
-                g2.setColor(BORDER_COLOR);
-                g2.fillRect(0, getHeight() - 1, getWidth(), 1);
             }
         };
-        header.setOpaque(false);
-        header.setBorder(new EmptyBorder(14, 18, 14, 18));
+        avatar.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        avatar.setForeground(Color.WHITE);
+        avatar.setPreferredSize(new Dimension(44, 44));
+        avatar.setOpaque(false);
 
-        // Avatar + info
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0));
-        left.setOpaque(false);
+        // Online dot overlay
+        JPanel avatarWrapper = new JPanel(null);
+        avatarWrapper.setOpaque(false);
+        avatarWrapper.setPreferredSize(new Dimension(50, 50));
+        avatar.setBounds(0, 3, 44, 44);
+        avatarWrapper.add(avatar);
 
-        JPanel avatar = new AvatarPanel(peerName, 40);
-        left.add(avatar);
+        if (c.online()) {
+            JLabel dot = new JLabel() {
+                @Override protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(BG_SIDEBAR);
+                    g2.fillOval(0, 0, 14, 14);
+                    g2.setColor(ONLINE_DOT);
+                    g2.fillOval(2, 2, 10, 10);
+                    g2.dispose();
+                }
+            };
+            dot.setBounds(32, 34, 14, 14);
+            avatarWrapper.add(dot);
+        }
 
-        JPanel info = new JPanel(new GridLayout(2, 1, 0, 2));
-        info.setOpaque(false);
-        JLabel nameLabel = new JLabel(peerName);
-        nameLabel.setFont(FONT_TITLE);
+        // Text info
+        JLabel nameLabel = new JLabel(c.name());
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
         nameLabel.setForeground(TEXT_PRIMARY);
 
-        statusLabel = new JLabel("● En ligne");
-        statusLabel.setFont(FONT_STATUS);
-        statusLabel.setForeground(ONLINE_GREEN);
+        JLabel lastLabel = new JLabel(c.lastMsg());
+        lastLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lastLabel.setForeground(TEXT_MUTED);
 
-        info.add(nameLabel);
-        info.add(statusLabel);
-        left.add(info);
-        header.add(left, BorderLayout.WEST);
+        JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        textPanel.setOpaque(false);
+        textPanel.add(nameLabel);
+        textPanel.add(lastLabel);
 
-        // Bouton options (3 points)
-        JButton menuBtn = new JButton("•••");
-        menuBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        menuBtn.setForeground(TEXT_MUTED);
-        menuBtn.setBackground(null);
-        menuBtn.setBorderPainted(false);
-        menuBtn.setContentAreaFilled(false);
-        menuBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        header.add(menuBtn, BorderLayout.EAST);
+        row.add(avatarWrapper, BorderLayout.WEST);
+        row.add(textPanel,     BorderLayout.CENTER);
 
-        return header;
+        // Hover + click
+        row.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) {
+                if (!c.name().equals(selectedClient))
+                    row.setBackground(HOVER_ITEM);
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                if (!c.name().equals(selectedClient))
+                    row.setBackground(BG_SIDEBAR);
+            }
+            @Override public void mouseClicked(MouseEvent e) {
+                selectClient(c.name());
+            }
+        });
+
+        row.putClientProperty("clientName", c.name());
+        return row;
     }
 
-    // ── Zone messages ─────────────────────────────────────────────────────────
-    private JScrollPane buildMessagesArea() {
-        messagesPanel = new JPanel();
-        messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
-        messagesPanel.setBackground(BG_DARK);
-        messagesPanel.setBorder(new EmptyBorder(16, 12, 8, 12));
+    // ── Chat Area ─────────────────────────────────────────────────────────────
+    JPanel buildChatArea() {
+        JPanel area = new JPanel(new BorderLayout());
+        area.setBackground(BG_CHAT);
 
-        scrollPane = new JScrollPane(messagesPanel);
-        scrollPane.setBorder(null);
-        scrollPane.setBackground(BG_DARK);
-        scrollPane.getViewport().setBackground(BG_DARK);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        scrollPane.getVerticalScrollBar().setBackground(BG_DARK);
+        // Chat header
+        JPanel header = new JPanel(new BorderLayout(12, 0));
+        header.setBackground(BG_SIDEBAR);
+        header.setBorder(new CompoundBorder(
+                new MatteBorder(0, 0, 1, 0, DIVIDER),
+                new EmptyBorder(14, 20, 14, 20)
+        ));
 
-        return scrollPane;
-    }
-
-    // ── Barre de saisie ───────────────────────────────────────────────────────
-    private JPanel buildInputBar() {
-        JPanel wrapper = new JPanel(new BorderLayout()) {
+        chatHeaderAvatar = new JLabel("", SwingConstants.CENTER) {
             @Override protected void paintComponent(Graphics g) {
-                g.setColor(BG_PANEL);
-                g.fillRect(0, 0, getWidth(), getHeight());
-                g.setColor(BORDER_COLOR);
-                g.fillRect(0, 0, getWidth(), 1);
+                if (selectedClient == null) return;
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(avatarColor(selectedClient));
+                g2.fillOval(0, 0, getWidth(), getHeight());
+                g2.dispose();
+                super.paintComponent(g);
             }
         };
-        wrapper.setOpaque(false);
-        wrapper.setBorder(new EmptyBorder(10, 14, 14, 14));
+        chatHeaderAvatar.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        chatHeaderAvatar.setForeground(Color.WHITE);
+        chatHeaderAvatar.setPreferredSize(new Dimension(44, 44));
+        chatHeaderAvatar.setOpaque(false);
 
-        // Label "typing..."
-        typingLabel = new JLabel(" ");
-        typingLabel.setFont(FONT_TIME);
-        typingLabel.setForeground(TEXT_MUTED);
-        typingLabel.setBorder(new EmptyBorder(0, 4, 4, 0));
-        wrapper.add(typingLabel, BorderLayout.NORTH);
+        chatHeaderName   = new JLabel();
+        chatHeaderName.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        chatHeaderName.setForeground(TEXT_PRIMARY);
 
-        // Conteneur input + bouton
-        JPanel inputRow = new JPanel(new BorderLayout(10, 0));
-        inputRow.setOpaque(false);
+        chatHeaderStatus = new JLabel();
+        chatHeaderStatus.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        chatHeaderStatus.setForeground(ONLINE_DOT);
 
-        inputField = new JTextArea(2, 1);
-        inputField.setFont(FONT_INPUT);
+        JPanel headerText = new JPanel(new GridLayout(2, 1, 0, 2));
+        headerText.setOpaque(false);
+        headerText.add(chatHeaderName);
+        headerText.add(chatHeaderStatus);
+
+        header.add(chatHeaderAvatar, BorderLayout.WEST);
+        header.add(headerText,       BorderLayout.CENTER);
+
+        // Messages panel
+        chatMessagesPanel = new JPanel();
+        chatMessagesPanel.setLayout(new BoxLayout(chatMessagesPanel, BoxLayout.Y_AXIS));
+        chatMessagesPanel.setBackground(BG_CHAT);
+        chatMessagesPanel.setBorder(new EmptyBorder(16, 16, 8, 16));
+
+        chatScroll = new JScrollPane(chatMessagesPanel);
+        chatScroll.setBorder(null);
+        chatScroll.getViewport().setBackground(BG_CHAT);
+        chatScroll.getVerticalScrollBar().setUnitIncrement(16);
+        styleScrollBar(chatScroll);
+
+        // Input bar
+        JPanel inputBar = new JPanel(new BorderLayout(10, 0));
+        inputBar.setBackground(BG_INPUT);
+        inputBar.setBorder(new CompoundBorder(
+                new MatteBorder(1, 0, 0, 0, DIVIDER),
+                new EmptyBorder(12, 18, 12, 18)
+        ));
+
+        inputField = new JTextField();
+        inputField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        inputField.setBackground(BG_CHAT);
         inputField.setForeground(TEXT_PRIMARY);
-        inputField.setBackground(BG_INPUT);
         inputField.setCaretColor(ACCENT);
-        inputField.setLineWrap(true);
-        inputField.setWrapStyleWord(true);
         inputField.setBorder(new CompoundBorder(
-                new LineBorder(BORDER_COLOR, 1, true),
+                new LineBorder(DIVIDER, 1, true),
                 new EmptyBorder(10, 14, 10, 14)
         ));
 
-        JScrollPane inputScroll = new JScrollPane(inputField);
-        inputScroll.setBorder(new LineBorder(BORDER_COLOR, 1, true));
-        inputScroll.setBackground(BG_INPUT);
-        inputScroll.getViewport().setBackground(BG_INPUT);
-        inputScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        sendButton = new RoundButton("➤");
-        sendButton.setPreferredSize(new Dimension(48, 48));
-        sendButton.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        sendButton = new JButton("Envoyer") {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getModel().isPressed() ? ACCENT_DARK : ACCENT);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 10, 10));
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        sendButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
         sendButton.setForeground(Color.WHITE);
-        sendButton.setBackground(MSG_SELF_BG);
-        sendButton.setBorderPainted(false);
+        sendButton.setOpaque(false);
         sendButton.setContentAreaFilled(false);
+        sendButton.setBorderPainted(false);
+        sendButton.setFocusPainted(false);
+        sendButton.setPreferredSize(new Dimension(100, 42));
         sendButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        inputRow.add(inputScroll, BorderLayout.CENTER);
-        inputRow.add(sendButton,  BorderLayout.EAST);
-        wrapper.add(inputRow, BorderLayout.CENTER);
+        inputBar.add(inputField, BorderLayout.CENTER);
+        inputBar.add(sendButton, BorderLayout.EAST);
 
-        // ── Événements ────────────────────────────────────────────────────────
-        sendButton.addActionListener(e -> sendMessage());
+        // Actions
+        ActionListener sendAction = e -> sendMessage();
+        sendButton.addActionListener(sendAction);
+        inputField.addActionListener(sendAction);
 
-        inputField.addKeyListener(new KeyAdapter() {
-            @Override public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER && !e.isShiftDown()) {
-                    e.consume();
-                    sendMessage();
-                }
-            }
-        });
+        area.add(header,    BorderLayout.NORTH);
+        area.add(chatScroll,BorderLayout.CENTER);
+        area.add(inputBar,  BorderLayout.SOUTH);
 
-        // Placeholder
-        inputField.setText("Écrivez un message…");
-        inputField.setForeground(TEXT_MUTED);
-        inputField.addFocusListener(new FocusAdapter() {
-            @Override public void focusGained(FocusEvent e) {
-                if (inputField.getText().equals("Écrivez un message…")) {
-                    inputField.setText("");
-                    inputField.setForeground(TEXT_PRIMARY);
-                }
-            }
-            @Override public void focusLost(FocusEvent e) {
-                if (inputField.getText().isBlank()) {
-                    inputField.setText("Écrivez un message…");
-                    inputField.setForeground(TEXT_MUTED);
-                }
-            }
-        });
-
-        return wrapper;
+        return area;
     }
 
-    private void sendMessage() {
+    // ── Logic ─────────────────────────────────────────────────────────────────
+    void selectClient(String name) {
+        selectedClient = name;
+
+        // Update sidebar highlight
+        for (Component comp : clientListPanel.getComponents()) {
+            if (comp instanceof JPanel row) {
+                Object prop = row.getClientProperty("clientName");
+                boolean sel = name.equals(prop);
+                row.setBackground(sel ? SELECTED_ITEM : BG_SIDEBAR);
+            }
+        }
+
+        // Update header
+        Client c = clients.stream().filter(cl -> cl.name().equals(name)).findFirst().orElse(null);
+        if (c == null) return;
+
+        String initials = Arrays.stream(c.name().split(" "))
+                .map(w -> String.valueOf(w.charAt(0))).reduce("", String::concat);
+        chatHeaderAvatar.setText(initials);
+        chatHeaderAvatar.repaint();
+        chatHeaderName.setText(c.name());
+        chatHeaderStatus.setText(c.online() ? "● En ligne" : "○ Hors ligne");
+        chatHeaderStatus.setForeground(c.online() ? ONLINE_DOT : TEXT_MUTED);
+
+        // Reload messages
+        refreshMessages();
+    }
+
+    void refreshMessages() {
+        chatMessagesPanel.removeAll();
+        List<Message> msgs = conversations.getOrDefault(selectedClient, List.of());
+
+        String lastDate = "";
+        for (Message m : msgs) {
+            // Day separator (simplified)
+            String today = "Aujourd'hui";
+            if (!today.equals(lastDate)) {
+                chatMessagesPanel.add(buildDateSeparator(today));
+                lastDate = today;
+            }
+            boolean isMe = m.sender().equals(ME);
+            chatMessagesPanel.add(buildBubble(m, isMe));
+            chatMessagesPanel.add(Box.createVerticalStrut(6));
+        }
+
+        chatMessagesPanel.add(Box.createVerticalGlue());
+        chatMessagesPanel.revalidate();
+        chatMessagesPanel.repaint();
+        scrollToBottom();
+    }
+
+    void sendMessage() {
         String text = inputField.getText().trim();
-        if (text.isEmpty() || text.equals("Écrivez un message…")) return;
+        if (text.isEmpty() || selectedClient == null) return;
 
-        appendMessage(myUsername, text, true, false);
+        Message msg = new Message(ME, text, LocalTime.now());
+        conversations.computeIfAbsent(selectedClient, k -> new ArrayList<>()).add(msg);
+
         inputField.setText("");
-        inputField.setForeground(TEXT_PRIMARY);
-
-        // TODO: envoyer via socket → out.println(text);
+        refreshMessages();
     }
 
-    public void appendMessage(String sender, String text, boolean isSelf, boolean isSystem) {
+    void scrollToBottom() {
         SwingUtilities.invokeLater(() -> {
-            if (isSystem) {
-                messagesPanel.add(buildSystemMsg(text));
-            } else {
-                messagesPanel.add(buildBubble(sender, text, isSelf));
-            }
-            messagesPanel.add(Box.createVerticalStrut(6));
-            messagesPanel.revalidate();
-            messagesPanel.repaint();
-            scrollToBottom();
+            JScrollBar sb = chatScroll.getVerticalScrollBar();
+            sb.setValue(sb.getMaximum());
         });
     }
 
-    public void setStatus(String status, boolean online) {
-        SwingUtilities.invokeLater(() -> {
-            statusLabel.setText("● " + status);
-            statusLabel.setForeground(online ? ONLINE_GREEN : TEXT_MUTED);
-        });
-    }
-
-    /** Affiche / masque "X est en train d'écrire…" */
-    public void setTyping(String peerName, boolean typing) {
-        SwingUtilities.invokeLater(() ->
-                typingLabel.setText(typing ? peerName + " est en train d'écrire…" : " ")
-        );
-    }
-
-    // ── Constructeurs de bulles ───────────────────────────────────────────────
-    private JPanel buildBubble(String sender, String text, boolean isSelf) {
-        JPanel row = new JPanel(new FlowLayout(
-                isSelf ? FlowLayout.RIGHT : FlowLayout.LEFT, 0, 0));
-        row.setOpaque(false);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    // ── Bubble Builder ────────────────────────────────────────────────────────
+    JPanel buildBubble(Message m, boolean isMe) {
+        JPanel wrapper = new JPanel(new FlowLayout(isMe ? FlowLayout.RIGHT : FlowLayout.LEFT, 0, 0));
+        wrapper.setOpaque(false);
+        wrapper.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
         JPanel bubble = new JPanel(new BorderLayout(0, 4)) {
             @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(isSelf ? MSG_SELF_BG : MSG_OTHER_BG);
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 18, 18));
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(isMe ? BUBBLE_ME : BUBBLE_OTHER);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 16, 16));
+                g2.dispose();
             }
         };
         bubble.setOpaque(false);
         bubble.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        if (!isSelf) {
-            JLabel nameLabel = new JLabel(sender);
-            nameLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-            nameLabel.setForeground(ACCENT);
-            bubble.add(nameLabel, BorderLayout.NORTH);
+        JTextArea textArea = new JTextArea(m.text());
+        textArea.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        textArea.setForeground(TEXT_PRIMARY);
+        textArea.setBackground(new Color(0, 0, 0, 0));
+        textArea.setOpaque(false);
+        textArea.setEditable(false);
+        textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
+
+        // Limit bubble width
+        int maxWidth = 380;
+        textArea.setSize(maxWidth, Short.MAX_VALUE);
+        int prefH = textArea.getPreferredSize().height;
+        textArea.setPreferredSize(new Dimension(maxWidth, prefH));
+
+        JLabel timeLabel = new JLabel(m.time().format(TIME_FMT));
+        timeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+        timeLabel.setForeground(new Color(255, 255, 255, 120));
+        timeLabel.setHorizontalAlignment(isMe ? SwingConstants.RIGHT : SwingConstants.LEFT);
+
+        if (!isMe) {
+            JLabel senderLabel = new JLabel(m.sender());
+            senderLabel.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            senderLabel.setForeground(ACCENT);
+            bubble.add(senderLabel, BorderLayout.NORTH);
         }
 
-        JTextArea msgText = new JTextArea(text);
-        msgText.setFont(FONT_MSG);
-        msgText.setForeground(TEXT_PRIMARY);
-        msgText.setBackground(new Color(0, 0, 0, 0));
-        msgText.setOpaque(false);
-        msgText.setEditable(false);
-        msgText.setLineWrap(true);
-        msgText.setWrapStyleWord(true);
-        msgText.setFocusable(false);
-        // Largeur max bulle ≈ 65% de la fenêtre
-        msgText.setPreferredSize(null);
-        bubble.add(msgText, BorderLayout.CENTER);
+        bubble.add(textArea,   BorderLayout.CENTER);
+        bubble.add(timeLabel,  BorderLayout.SOUTH);
 
-        JLabel timeLabel = new JLabel(sdf.format(new Date()));
-        timeLabel.setFont(FONT_TIME);
-        timeLabel.setForeground(isSelf ? new Color(200, 220, 255, 160) : TEXT_MUTED);
-        timeLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        bubble.add(timeLabel, BorderLayout.SOUTH);
-
-        // Limite la largeur de la bulle
-        bubble.setMaximumSize(new Dimension(340, Integer.MAX_VALUE));
-        bubble.setPreferredSize(bubble.getPreferredSize());
-
-        row.add(bubble);
-        return row;
+        wrapper.add(bubble);
+        return wrapper;
     }
 
-    private JPanel buildSystemMsg(String text) {
-        JPanel row = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        row.setOpaque(false);
-        JLabel lbl = new JLabel(text);
-        lbl.setFont(FONT_TIME);
+    JPanel buildDateSeparator(String label) {
+        JPanel sep = new JPanel(new BorderLayout(8, 0));
+        sep.setOpaque(false);
+        sep.setBorder(new EmptyBorder(8, 0, 8, 0));
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+
+        JSeparator left  = new JSeparator(); left.setForeground(DIVIDER);
+        JSeparator right = new JSeparator(); right.setForeground(DIVIDER);
+        JLabel lbl = new JLabel(label, SwingConstants.CENTER);
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         lbl.setForeground(TEXT_MUTED);
-        lbl.setBorder(new EmptyBorder(4, 12, 4, 12));
-        row.add(lbl);
-        return row;
+
+        sep.add(left,  BorderLayout.WEST);
+        sep.add(lbl,   BorderLayout.CENTER);
+        sep.add(right, BorderLayout.EAST);
+        return sep;
     }
 
-    private void scrollToBottom() {
-        JScrollBar bar = scrollPane.getVerticalScrollBar();
-        SwingUtilities.invokeLater(() -> bar.setValue(bar.getMaximum()));
-    }
-
-    static class AvatarPanel extends JPanel {
-        private final String initials;
-        private static final Color[] COLORS = {
-                new Color(88, 166, 255), new Color(63, 185, 80),
-                new Color(248, 81, 73),  new Color(210, 153, 34)
+    // ── Utilities ─────────────────────────────────────────────────────────────
+    Color avatarColor(String name) {
+        Color[] palette = {
+                new Color(99, 179, 237), new Color(154, 117, 234),
+                new Color(72, 187, 120), new Color(246, 173, 85),
+                new Color(252, 129, 129), new Color(76, 201, 240)
         };
-        AvatarPanel(String name, int size) {
-            this.initials = name.isEmpty() ? "?" : String.valueOf(name.charAt(0)).toUpperCase();
-            setPreferredSize(new Dimension(size, size));
-            setOpaque(false);
-        }
-        @Override protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            int size = Math.min(getWidth(), getHeight());
-            Color c = COLORS[Math.abs(initials.hashCode()) % COLORS.length];
-            g2.setColor(c);
-            g2.fillOval(0, 0, size, size);
-            g2.setColor(Color.WHITE);
-            g2.setFont(new Font("SansSerif", Font.BOLD, size / 2));
-            FontMetrics fm = g2.getFontMetrics();
-            int x = (size - fm.stringWidth(initials)) / 2;
-            int y = (size - fm.getHeight()) / 2 + fm.getAscent();
-            g2.drawString(initials, x, y);
-        }
+        return palette[Math.abs(name.hashCode()) % palette.length];
     }
 
-    static class RoundButton extends JButton {
-        RoundButton(String label) { super(label); setFocusPainted(false); }
-        @Override protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(getModel().isPressed() ? ACCENT_DARK : MSG_SELF_BG);
-            g2.fillOval(0, 0, getWidth(), getHeight());
-            g2.setColor(getForeground());
-            g2.setFont(getFont());
-            FontMetrics fm = g2.getFontMetrics();
-            int x = (getWidth()  - fm.stringWidth(getText())) / 2;
-            int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-            g2.drawString(getText(), x, y);
-        }
-        @Override public boolean isOpaque() { return false; }
+    void styleScrollBar(JScrollPane sp) {
+        sp.getVerticalScrollBar().setBackground(BG_SIDEBAR);
+        sp.getVerticalScrollBar().setOpaque(true);
     }
 
-    // ── Point d'entrée (démo) ─────────────────────────────────────────────────
+    // ── Entry Point ───────────────────────────────────────────────────────────
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            try { UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()); }
-            catch (Exception ignored) {}
-
-            Chat ui = new Chat("Moi", "Alice");
-
-            // Simulation de messages pour la démo — retire cette section en prod
-            Timer demo = new Timer(1200, null);
-            String[][] msgs = {
-                    {"Alice", "Salut ! Tu m'entends ?", "false"},
-                    {"Moi",   "Oui, parfaitement !",    "true"},
-                    {"Alice", "Super, le socket fonctionne 🎉", "false"},
-                    {"Moi",   "Interface sympa non ?",  "true"},
-            };
-            final int[] i = {0};
-            demo.addActionListener(e -> {
-                if (i[0] < msgs.length) {
-                    String[] m = msgs[i[0]++];
-                    boolean self = m[1].equals("Moi") || Boolean.parseBoolean(m[2]);
-                    ui.appendMessage(m[0], m[1], self, false);
-                } else {
-                    ((Timer) e.getSource()).stop();
-                }
-            });
-            demo.start();
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {}
+            Chat app = new Chat();
+            app.setVisible(true);
         });
     }
 }
