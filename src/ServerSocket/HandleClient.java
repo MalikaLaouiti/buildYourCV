@@ -30,7 +30,7 @@ public class HandleClient extends  Thread{
             CustomSocket custom=new CustomSocket(id,s);
             SocketManager.list_Of_Socket.add(custom);
 
-            new Read(br).start();
+            new Read(br,id).start();
 
 //            Scanner sc=new Scanner(System.in);
 //            Write writemsg=new Write(pw,sc);

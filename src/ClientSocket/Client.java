@@ -1,7 +1,7 @@
 package ClientSocket;
 
-import ServerSocket.Read;
-import ServerSocket.Write;
+import ClientSocket.Read;
+import ClientSocket.Write;
 
 import java.io.BufferedReader;
 import java.io.IOException;
